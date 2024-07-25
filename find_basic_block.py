@@ -1,3 +1,8 @@
+# Display a simple hello message
+#
+# @category xref.Demo
+#
+
 # Import Ghidra modules
 from ghidra.program.model.block import BasicBlockModel
 from ghidra.util.task import ConsoleTaskMonitor
