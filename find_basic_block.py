@@ -1,4 +1,4 @@
-# Display a simple hello message
+# Find basic blocks of each function
 #
 # @category xref.Demo
 #
