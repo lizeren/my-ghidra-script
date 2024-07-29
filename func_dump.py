@@ -1,13 +1,8 @@
-# Output all the decompiled functions and their entry point(starting memory address)
-#
-# @category xref.Demo
-#
-
-# Import necessary Ghidra modules
+import json
 from ghidra.app.decompiler import DecompInterface
 from ghidra.util.task import ConsoleTaskMonitor
 
-def get_decompiled_function_info():
+def export_function_info_to_files():
     # Initialize the decompiler
     decomp_interface = DecompInterface()
     decomp_interface.openProgram(currentProgram)
@@ -17,22 +12,27 @@ def get_decompiled_function_info():
 
     # Get the function manager from the current program
     function_manager = currentProgram.getFunctionManager()
-    functions = function_manager.getFunctions(True) # True to iterate forward through functions
+    functions = function_manager.getFunctions(True)  # True to iterate forward through functions
+
+    # Prepare to collect function data
+    functions_data = []
 
     # Iterate over all functions
     for function in functions:
         # Get the entry point address and the name of the function
-        function_entry = function.getEntryPoint()
+        function_entry = str(function.getEntryPoint())
+        function_entry = hex(int(("0x"+ function_entry[3:]),16))
         function_name = function.getName()
 
-        # Attempt to decompile the function
-        decomp_result = decomp_interface.decompileFunction(function, 0, monitor)
+        # Collect function info for JSON output
+        functions_data.append({
+            "name": function_name,
+            "entry_point": function_entry
+        })
 
-        # Check if decompilation was successful
-        if decomp_result.decompileCompleted():
-            print("Function Name: {}, Entry Point: {}".format(function_name, function_entry))
-        else:
-            print("Failed to decompile Function: {}, Entry Point: {}".format(function_name, function_entry))
+    # Write the collected data to a JSON file
+    with open("/home/lizeren/Desktop/static_analyzer/output/dec_functions_list.json", "w") as json_file:
+        json.dump(functions_data, json_file, indent=4)
 
-# Call the function to print decompiled function names and addresses
-get_decompiled_function_info()
+# Call the function to export function names and addresses to files
+export_function_info_to_files()
