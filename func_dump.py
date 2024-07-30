@@ -1,38 +1,63 @@
-import json
+# Dump functions to file named after them
+#
+# @category xref.Demo
+#
+
+# Import the necessary Ghidra modules
 from ghidra.app.decompiler import DecompInterface
 from ghidra.util.task import ConsoleTaskMonitor
+from ghidra.program.model.symbol import SourceType
+from java.io import FileWriter
+import os
 
-def export_function_info_to_files():
-    # Initialize the decompiler
-    decomp_interface = DecompInterface()
-    decomp_interface.openProgram(currentProgram)
+OUTPUT_DIR = "/home/lizeren/Desktop/static_analyzer/output/dec_func/"
 
-    # Create a task monitor
-    monitor = ConsoleTaskMonitor()
+def decompile_function(function):
+    """
+    Decompile the specified function and return the decompiled text.
+    """
+    if not function:
+        print("No function was provided to decompile.")
+        return None
 
-    # Get the function manager from the current program
+    # Initialize the decprintHelloam(currentProgram)
+
+    # Decompile the function
+    results = decompiler.decompileFunction(function, 0, ConsoleTaskMonitor())
+    if results.decompileCompleted():
+        decompiled_text = results.getDecompiledFunction().getC()
+    else:
+        print("Decompilation failed for function: {}".format(function.getName()))
+        return None
+
+    decompiler.dispose()
+    return decompiled_text
+
+def save_decompiled_code(function_name, code):
+    """
+    Save the decompiled code to a .c file named after the function.
+    """
+    # Ensure the output directory exists
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    file_path = os.path.join(OUTPUT_DIR, "{}.c".format(function_name))
+    with open(file_path, 'w') as file:
+        file.write(code)
+    print("Decompiled code saved to: {}".format(file_path))
+
+def main():
+    # Iterate over all functions in the current program
     function_manager = currentProgram.getFunctionManager()
-    functions = function_manager.getFunctions(True)  # True to iterate forward through functions
-
-    # Prepare to collect function data
-    functions_data = []
-
-    # Iterate over all functions
+    functions = function_manager.getFunctions(True) # True to iterate forward
     for function in functions:
-        # Get the entry point address and the name of the function
-        function_entry = str(function.getEntryPoint())
-        function_entry = hex(int(("0x"+ function_entry[3:]),16))
         function_name = function.getName()
+        if function.getSymbol().getSource() != SourceType.DEFAULT:
+            # Only process user-defined or imported functions
+            decompiled_code = decompile_function(function)
+            if decompiled_code:
+                save_decompiled_code(function_name, decompiled_code)
 
-        # Collect function info for JSON output
-        functions_data.append({
-            "name": function_name,
-            "entry_point": function_entry
-        })
-
-    # Write the collected data to a JSON file
-    with open("/home/lizeren/Desktop/static_analyzer/output/dec_functions_list.json", "w") as json_file:
-        json.dump(functions_data, json_file, indent=4)
-
-# Call the function to export function names and addresses to files
-export_function_info_to_files()
+# Entry point
+if __name__ == "__main__":
+    main()
