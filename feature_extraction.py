@@ -1,4 +1,8 @@
-# Import necessary Ghidra modules
+# Feature extraction
+#
+# @category xref.Demo
+#
+
 from ghidra.program.model.listing import FunctionManager
 from ghidra.program.model.symbol import SourceType
 from ghidra.program.model.block import BasicBlockModel
@@ -8,7 +12,7 @@ import json
 import os
 
 # Output file location
-OUTPUT_FILE = "/home/lizeren/Desktop/static_analyzer/output/function_details.json"
+OUTPUT_FILE = "/home/lizeren/Desktop/static_analyzer/output/dec_feature.json"
 
 def get_data_type_size(data_type):
     """
@@ -33,18 +37,34 @@ def gather_function_details(function, basicBlockModel, monitor):
         print("No function was provided.")
         return None
 
-    # Similar data gathering as before, but using OrderedDict to preserve order
     details = OrderedDict()
     details["function_name"] = function.getName()
-    details["number_of_parameters"] = len(function.getParameters())
-    details["total_parameter_stack_size_bytes"] = sum(get_data_type_size(param.getDataType()) for param in function.getParameters())
-    details["total_local_variable_stack_size_bytes"] = sum(get_data_type_size(var.getDataType()) for var in function.getLocalVariables())
-    details["total_local_variables"] = len(function.getLocalVariables())
-
-    # Basic block calculation as before
+    
+    # Gather parameter and local variable details
+    num_parameters = len(function.getParameters())
+    param_stack_size = sum(get_data_type_size(param.getDataType()) for param in function.getParameters())
+    local_var_stack_size = sum(get_data_type_size(var.getDataType()) for var in function.getLocalVariables())
+    num_local_variables = len(function.getLocalVariables())
+    
+    # Basic block calculation
     blocks = basicBlockModel.getCodeBlocksContaining(function.getBody(), monitor)
     num_basic_blocks = sum(1 for _ in blocks)
+    
+    # Adding calculated values to the ordered dictionary
+    details["number_of_parameters"] = num_parameters
+    details["total_parameter_stack_size_bytes"] = param_stack_size
+    details["total_local_variable_stack_size_bytes"] = local_var_stack_size
+    details["total_local_variables"] = num_local_variables
     details["number_of_meaningful_basic_blocks"] = num_basic_blocks
+             
+    # # of parameters, parameter stack size, local variable stack size, # of local variables,# of basic blocks
+    details["vector"] = [
+        num_parameters,
+        param_stack_size,
+        local_var_stack_size,
+        num_local_variables,
+        num_basic_blocks
+    ]
 
     return details
 
