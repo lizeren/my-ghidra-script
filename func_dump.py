@@ -10,7 +10,7 @@ from ghidra.program.model.symbol import SourceType
 from java.io import FileWriter
 import os
 
-OUTPUT_DIR = "/home/lizeren/Desktop/static_analyzer/output/dec_func/"
+OUTPUT_DIR = "/home/lizeren/Download"
 
 def decompile_function(function):
     """

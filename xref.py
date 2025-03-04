@@ -26,7 +26,7 @@ def find_callers(function, visited, path, all_paths):
     if not found_new_caller:
         all_paths.append(list(path))  # Add a copy of the current path
 
-target_function_name = "FUN_00cdd61c"
+target_function_name = "main"
         
 print("~~~~~~~~~~~~~~~~Start of script~~~~~~~~~~~~~~~~")
 program = getCurrentProgram()
